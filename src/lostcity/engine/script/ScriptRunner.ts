@@ -27,6 +27,7 @@ import Loc from '#lostcity/entity/Loc.js';
 import Obj from '#lostcity/entity/Obj.js';
 import Npc from '#lostcity/entity/Npc.js';
 import Player from '#lostcity/entity/Player.js';
+import Environment from '#lostcity/util/Environment.js';
 
 export type CommandHandler = (state: ScriptState) => void;
 export type CommandHandlers = {
@@ -132,6 +133,7 @@ export default class ScriptRunner {
             }
             state.execution = ScriptState.RUNNING;
 
+            const start: number = performance.now() * 1000;
             while (state.execution === ScriptState.RUNNING) {
                 if (state.pc >= state.script.opcodes.length || state.pc < -1) {
                     throw new Error('Invalid program counter: ' + state.pc + ', max expected: ' + state.script.opcodes.length);
@@ -144,6 +146,15 @@ export default class ScriptRunner {
 
                 state.opcount++;
                 ScriptRunner.executeInner(state, state.script.opcodes[++state.pc]);
+            }
+            const time: number = ((performance.now() * 1000) - start) | 0;
+            if (Environment.LOCAL_DEV && time > 1000) {
+                const message: string = `Warning [cpu time]: Script: ${state.script.info.scriptName}, time: ${time}us`;
+                if (state.self instanceof Player) {
+                    state.self.wrappedMessageGame(message);
+                } else {
+                    console.warn(message);
+                }
             }
         } catch (err: any) {
             // print the last opcode executed

@@ -136,7 +136,7 @@ export class NetworkPlayer extends Player {
         const prot: ServerProt = encoder.prot;
         let buf: Packet;
         if (prot.length === -1) {
-            buf = Packet.alloc(0);
+            buf = Packet.alloc(1);
         } else if (prot.length === -2) {
             buf = Packet.alloc(2); // maybe this can be a type 1.
         } else {
